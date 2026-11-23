@@ -1,0 +1,25 @@
+# Rust build output — rebuildable, can be several GB
+/target/
+**/target/
+debug/
+**/*.rs.bk
+*.pdb
+# Dioxus build output — NEVER commit built WASM
+/dist/
+**/dist/
+# Dioxus CLI cache
+/.dioxus/
+**/.dioxus/
+# Secrets and local config — NEVER commit
+.env
+.env.*
+!.env.example
+# Altare / tunnel credentials if ever created in the repo (do not)
+/.cloudflared/
+*.pem
+*.key
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

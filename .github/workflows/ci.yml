@@ -1,0 +1,41 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: true
+      - name: Install Dioxus CLI (pinned to the dioxus 0.7.10 in Cargo.lock)
+        run: cargo install dioxus-cli --version 0.7.10 --locked
+      - name: Clippy + tests (native)
+        run: |
+          cargo clippy --workspace --all-targets
+          cargo test --workspace
+      - name: Build API (native)
+        run: cargo build --release -p api
+      - name: Build frontend (WASM)
+        working-directory: crates/app
+        run: dx build --release --platform web
+      - name: Verify web build output
+        run: |
+          ls crates/app/target/dx/app/release/web/public/
+          test -f crates/app/target/dx/app/release/web/public/index.html
+          ls crates/app/target/dx/app/release/web/public/assets/*.wasm
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: crates/app/target/dx/app/release/web/public/

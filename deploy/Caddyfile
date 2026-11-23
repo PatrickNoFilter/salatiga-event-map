@@ -1,0 +1,23 @@
+# Caddy config for production. Replace events.example.com with your domain.
+# Caddy obtains and renews Let's Encrypt HTTPS certificates automatically.
+events.example.com {
+    # Reverse proxy the API
+    handle /api/* {
+        reverse_proxy api:8080
+    }
+
+    # Serve the compiled Dioxus web app (SPA)
+    handle {
+        root * /srv/web
+        try_files {path} /index.html
+        file_server
+    }
+
+    # Security headers
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+
+    encode gzip zstd
+}

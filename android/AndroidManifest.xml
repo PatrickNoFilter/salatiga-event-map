@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Custom AndroidManifest for the Dioxus WebView app.
+  Reference it from Dioxus.toml:
+    [application]
+    android_manifest = "android/AndroidManifest.xml"
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- "Near me": coarse + fine location from the WebView Geolocation API / GPS -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <application
+        android:usesCleartextTraffic="true"
+        android:label="Salatiga Event Map">
+        <!-- dx merges the generated activity into this manifest at build time -->
+    </application>
+</manifest>

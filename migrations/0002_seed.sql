@@ -1,0 +1,77 @@
+-- 8 sample events around Salatiga, Jawa Tengah, Indonesia.
+-- Coordinates are approximate WGS84 decimal degrees for real landmarks.
+-- Dates are relative to "now" so the demo always shows upcoming events.
+
+INSERT INTO events (title, description, category, starts_at, ends_at, venue_name, address, lat, lng, price_text, is_free, organizer, contact, ticket_url, tags, status) VALUES
+
+('Salatiga Acoustic Night',
+ 'Live acoustic performances by local bands at the city square. Bring a blanket and enjoy the evening.',
+ 'music',
+ now() + interval '2 days', now() + interval '2 days 4 hours',
+ 'Alun-alun Salatiga', 'Jl. Letjen S. Parman, Salatiga',
+ -7.3307, 110.5076, 'Free', true,
+ 'Komunitas Musik Salatiga', '0812-3456-7890', NULL,
+ ARRAY['live music','acoustic','family'], 'approved'),
+
+('Festival Kuliner Rasa Salatiga',
+ 'Taste the best of local Javanese cuisine, coffee and street food from more than 30 vendors.',
+ 'food',
+ now() + interval '5 days', now() + interval '5 days 8 hours',
+ 'Pasar Raya Salatiga', 'Jl. Pattimura, Salatiga',
+ -7.3271, 110.5084, 'Rp 25.000', false,
+ 'Dinas Pariwisata Salatiga', '0298-321-123', 'https://example.com/tickets/kuliner',
+ ARRAY['food','coffee','local'], 'approved'),
+
+('Pameran Seni Rupa Kontemporer',
+ 'An exhibition of paintings and photography by artists from Salatiga and surrounding cities.',
+ 'arts',
+ now() + interval '8 days', now() + interval '15 days',
+ 'Taman Pancasila', 'Jl. Diponegoro, Salatiga',
+ -7.3289, 110.5043, 'Free', true,
+ 'Komunitas Seni Salatiga', '0813-2222-1111', NULL,
+ ARRAY['exhibition','painting','photography'], 'approved'),
+
+('UKSW Career & Startup Fair',
+ 'Meet recruiters and startups, attend workshops, and explore internship opportunities.',
+ 'community',
+ now() + interval '11 days', now() + interval '11 days 6 hours',
+ 'UKSW Convention Center', 'Jl. Hasanudin No.3, Salatiga',
+ -7.3236, 110.4967, 'Free', true,
+ 'Universitas Kristen Satya Wacana', 'career@uksw.edu', 'https://example.com/register/career',
+ ARRAY['career','startup','students'], 'approved'),
+
+('Konser Paduan Suara Maranatha',
+ 'An evening choir concert featuring classical and contemporary pieces.',
+ 'music',
+ now() + interval '14 days', now() + interval '14 days 3 hours',
+ 'Gereja Maranatha', 'Jl. Setiawan No.1, Salatiga',
+ -7.3240, 110.5037, 'Rp 50.000', false,
+ 'Maranatha Choir', '0815-777-8888', 'https://example.com/tickets/choir',
+ ARRAY['choir','concert','classical'], 'approved'),
+
+('Turnamen Futsal Antar RT',
+ 'Neighborhood futsal tournament open to all ages. Register at the venue before the match.',
+ 'community',
+ now() + interval '18 days', now() + interval '19 days',
+ 'Gelora Salatiga', 'Jl. Merbabu, Salatiga',
+ -7.3154, 110.4960, 'Rp 20.000', false,
+ 'Karang Taruna Salatiga', '0856-111-2222', NULL,
+ ARRAY['sports','futsal','community'], 'approved'),
+
+('Salatiga Coffee Week',
+ 'A week celebrating Salatiga coffee culture: brewing workshops, cupping sessions and pop-up cafes.',
+ 'food',
+ now() + interval '22 days', now() + interval '28 days',
+ 'Jl. Diponegoro', 'Jl. Diponegoro, Salatiga',
+ -7.3316, 110.5045, 'Free', true,
+ 'Salatiga Coffee Community', 'coffee@salatiga.id', NULL,
+ ARRAY['coffee','workshop','food'], 'approved'),
+
+('Nonton Bareng di Aula Sumpah Pemuda',
+ 'Outdoor movie night with local snacks. Family-friendly, all ages welcome.',
+ 'arts',
+ now() + interval '26 days', now() + interval '26 days 4 hours',
+ 'Aula Sumpah Pemuda', 'Jl. Sumpah Pemuda, Salatiga',
+ -7.3300, 110.5010, 'Free', true,
+ 'Komunitas Film Salatiga', '0812-999-0000', NULL,
+ ARRAY['film','family','free'], 'approved');

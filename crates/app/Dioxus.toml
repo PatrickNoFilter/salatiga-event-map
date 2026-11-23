@@ -1,0 +1,24 @@
+[application]
+name = "event-map"
+default_platform = "web"
+public_dir = "public"
+
+# Android (Milestone 6). Uncomment android_manifest when building for Android:
+# android_manifest = "../../android/AndroidManifest.xml"
+# asset_dir = "assets"
+
+[android]
+identifier = "id.salatiga.eventmap"
+min_sdk = 24
+target_sdk = 34
+
+[android.application]
+uses_cleartext_traffic = true
+
+[web.app]
+title = ""
+base_path = ""
+
+[web.watcher]
+reload_html = true
+watch_path = ["src", "assets"]
