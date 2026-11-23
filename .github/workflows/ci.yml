@@ -31,11 +31,11 @@ jobs:
         run: dx build --release --platform web
       - name: Verify web build output
         run: |
-          ls crates/app/target/dx/event-map/release/web/public/
-          test -f crates/app/target/dx/event-map/release/web/public/index.html
-          ls crates/app/target/dx/event-map/release/web/public/assets/*.wasm
+          ls target/dx/app/release/web/public/
+          test -f target/dx/app/release/web/public/index.html
+          ls target/dx/app/release/web/public/wasm/*.wasm
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-dist
-          path: crates/app/target/dx/event-map/release/web/public/
+          path: target/dx/app/release/web/public/
