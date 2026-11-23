@@ -18,7 +18,7 @@ pg_ctlcluster 18 main start 2>/dev/null || pg_ctlcluster 16 main start 2>/dev/nu
 
 # Find the Dioxus web build output (dx writes under the app crate's target/)
 ROOT=""
-for d in crates/app/target/dx/app/release/web/public target/dx/app/release/web/public; do
+for d in crates/app/target/dx/event-map/release/web/public crates/app/target/dx/app/release/web/public target/dx/event-map/release/web/public target/dx/app/release/web/public; do
   if [ -f "$d/index.html" ]; then ROOT="$PWD/$d"; break; fi
 done
 [ -n "$ROOT" ] || { echo "ERROR: no dx build output found (run: cd crates/app && dx build --release --platform web)"; exit 1; }
