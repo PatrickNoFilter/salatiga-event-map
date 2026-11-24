@@ -92,7 +92,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def end_headers(self):
         # Always allow the app shell to refresh; static assets can cache briefly.
-        if self.path == "/" or self.path.endswith(".html"):
+        # CSS/JS/WASM are revalidated on every load so frontend updates show
+        # up on a plain reload instead of sitting in the browser cache for hours.
+        if self.path == "/" or self.path.endswith((".html", ".css", ".js", ".wasm")):
             self.send_header("Cache-Control", "no-cache")
         super().end_headers()
 
