@@ -133,11 +133,20 @@ html, body, #main {
 .admin-row .actions { margin-top: 8px; }
 
 @media (max-width: 760px) {
-  .sidebar { display: none; }
+  /* Stacked mobile layout: map on top, event list below it (same list as desktop) */
+  html, body, #main { height: auto; }
+  #map { height: 55vh; height: 55dvh; }
+  .sidebar {
+    display: flex; position: static; width: auto;
+    border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none;
+    overflow: visible;
+  }
   .card {
+    position: fixed;
     top: auto; left: 0; right: 0; bottom: 0; width: 100%;
     max-height: 62vh; border-radius: 18px 18px 0 0; padding-bottom: calc(18px + env(safe-area-inset-bottom));
   }
+  .panel { position: fixed; }
   .form-grid { grid-template-columns: 1fr; }
   .topbar { padding-left: 10px; padding-right: 10px; }
 }
