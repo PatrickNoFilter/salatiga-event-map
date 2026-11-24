@@ -7,17 +7,19 @@ A city event map for **Salatiga, Jawa Tengah, Indonesia**. One Rust codebase ren
 ## Live deployment (Altare sandbox)
 
 - Host: Altare sandbox `salatiga-event-map` (Tokyo jp-tyo01, Ubuntu 26.04, no Docker, no systemd).
-- The web frontend is served by `deploy/serve.py` on the public port **25336** (Altare-assigned; the Altare HTTPS domain points at it), proxying `/api/*` to the Axum API on `127.0.0.1:8080`. Postgres + PostGIS runs locally in the sandbox.
+- The web frontend is served by `deploy/serve.py` on the public port **25336** (Altare-assigned; the Altare HTTPS domain points at it), proxying `/api/*` to the Axum API on `127.0.0.1:8080`.
+- Database: **Neon** (PostgreSQL 18, Singapore, Free plan) — the sandbox runs no local Postgres (its container has no effective capabilities). The direct connection string (no `-pooler`, `sslmode=require`) lives in `~/.sem-env` on the box, never in git.
 - The frontend uses the page's own origin as its API base, so no rebuild is needed for the domain.
 - Start/restart on the sandbox (secrets live in `~/.sem-env` on the box, never in git):
   ```bash
-  cd ~/salatiga-event-map
+  cd /root/salatiga-event-map
   git pull
   cargo build --release -p api
-  cd crates/app && dx build --release --platform web && cd ../..
+  dx build --release --platform web --package app
   bash deploy/start.sh   # run inside tmux
   ```
 - CI (`.github/workflows/ci.yml`) builds the API and the Dioxus WASM frontend on every push to `main`. Built WASM is never committed.
+- Caching notes: Altare's edge stamps `max-age=14400` on static assets and ignores `no-cache`, so the stylesheet URL is versioned (`/assets/style.css?v=N` in `crates/app/index.html` — bump it on every stylesheet change). The WASM loader filename carries a content hash, so app rebuilds are fetched fresh automatically. There are two tracked copies of the stylesheet (`crates/app/assets/style.css` and `crates/app/public/assets/style.css`) — dx bundles the `public/` one, keep both in sync.
 
 Built following [EVENT_MAP_BUILD_GUIDE.md](EVENT_MAP_BUILD_GUIDE.md).
 
@@ -28,10 +30,10 @@ Built following [EVENT_MAP_BUILD_GUIDE.md](EVENT_MAP_BUILD_GUIDE.md).
 | Frontend | Dioxus 0.7 (web + Android WebView) |
 | Map | MapLibre GL JS 4.7.1 (OSM raster tiles in dev) |
 | API | Axum 0.8, sqlx 0.8, tower-http, tower_governor |
-| Database | PostgreSQL 16 + PostGIS 3.4 |
+| Database | PostgreSQL 18 + PostGIS (Neon, live) / PostgreSQL 16 + PostGIS 3.4 (dev compose) |
 | Deploy | Docker Compose + Caddy (auto HTTPS) |
 
-City center: `lng 110.5076, lat -7.3307`. Categories: `music`, `food`, `arts`, `community`.
+City center: `lng 110.5076, lat -7.3307`. Categories: `music`, `food`, `arts`, `community`, `maintenance`.
 
 ## Quick start (development)
 
@@ -67,7 +69,9 @@ Open the URL printed by `dx serve`. The map centers on Salatiga with colored dot
 - **Submission form**: tap the map to place a pin; validates on the server; new events become `pending`.
 - **Admin panel** (`⚙`): token kept in memory only; approve/reject pending events. Token compared in constant time.
 - **Near me** (`◎`): browser/Android Geolocation API centers the map on the user.
-- **Responsive**: sidebar list becomes a bottom sheet and the card slides up on phones; 44 px touch targets.
+- **Responsive**: on phones the event list stacks under the map (map 55dvh, list below, page scrolls); detail card and panels are fixed bottom sheets; 44 px touch targets.
+- **Maintenance notices**: category `maintenance` (amber badge) always sorts after all real events, so notices like a PLN outage sit at the bottom of the list.
+- **Dates**: events with no time show the date only — no fake 00:00.
 
 ## API
 
