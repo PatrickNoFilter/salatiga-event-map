@@ -1,4 +1,4 @@
-use chrono::{DateTime, Datelike, Duration, FixedOffset, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, Datelike, Duration, FixedOffset, NaiveDateTime, NaiveTime, TimeZone, Utc};
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use shared::{Event, NewEvent};
@@ -36,9 +36,16 @@ struct Bounds {
 
 fn fmt_wib(dt: &DateTime<Utc>) -> String {
     let offset = FixedOffset::east_opt(WIB).unwrap();
-    dt.with_timezone(&offset)
-        .format("%a, %d %b %Y %H:%M")
-        .to_string()
+    let local = dt.with_timezone(&offset);
+    // Date-only events are stored at 00:00 (start) / 23:59 (end) — show just
+    // the date, not a made-up time.
+    if local.time() == NaiveTime::from_hms_opt(0, 0, 0).unwrap()
+        || local.time() == NaiveTime::from_hms_opt(23, 59, 0).unwrap()
+    {
+        local.format("%a, %d %b %Y").to_string()
+    } else {
+        local.format("%a, %d %b %Y %H:%M").to_string()
+    }
 }
 
 fn parse_local_datetime(value: &str) -> Option<DateTime<Utc>> {
