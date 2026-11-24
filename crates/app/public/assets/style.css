@@ -76,6 +76,7 @@ html, body, #main {
 .badge.food { background: #1D4ED8; }
 .badge.arts { background: #7C3AED; }
 .badge.community { background: #0F766E; }
+.badge.maintenance { background: #B45309; }
 .badge.other { background: #444; }
 
 /* Detail card (desktop: right side; mobile: bottom sheet) */

@@ -224,8 +224,14 @@ fn App() -> Element {
             loading.set(true);
             let params = build_query(cat, free, &p, b);
             match fetch_events(params).await {
-                Ok(list) => {
+                Ok(mut list) => {
                     api_error.set(None);
+                    // Maintenance notices always sort last, then by start time.
+                    list.sort_by(|a, b| {
+                        (a.category == "maintenance")
+                            .cmp(&(b.category == "maintenance"))
+                            .then(a.starts_at.cmp(&b.starts_at))
+                    });
                     events.set(list);
                 }
                 Err(e) => api_error.set(Some(format!("Cannot load events: {e}"))),
