@@ -4,6 +4,12 @@
   Reference it from Dioxus.toml:
     [application]
     android_manifest = "android/AndroidManifest.xml"
+
+  NOTE: dx 0.7.10 does NOT merge its activity into this manifest — the
+  MainActivity + LAUNCHER intent-filter below must be declared here,
+  or the app installs with no launcher icon. (Copied from dx's own
+  default manifest template, assets/android/gen/.../AndroidManifest.xml.hbs,
+  with lib_name "main" to match the staged libmain.so.)
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- "Near me": coarse + fine location from the WebView Geolocation API / GPS -->
@@ -14,6 +20,15 @@
     <application
         android:usesCleartextTraffic="true"
         android:label="Salatiga Event Map">
-        <!-- dx merges the generated activity into this manifest at build time -->
+        <activity android:configChanges="orientation|screenLayout|screenSize|keyboardHidden" android:exported="true"
+            android:label="Salatiga Event Map" android:name="dev.dioxus.main.MainActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+            <meta-data android:name="android.app.lib_name" android:value="main" />
+            <meta-data android:name="android.app.func_name" android:value="ANativeActivity_onCreate" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>

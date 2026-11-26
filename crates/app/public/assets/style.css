@@ -20,7 +20,7 @@ html, body, #main {
   background: var(--bg);
 }
 
-#map { width: 100%; height: 100vh; height: 100dvh; }
+#map { width: 100%; height: 100vh; min-height: 320px; }
 
 /* Top bar: title + filter chips */
 .topbar {
@@ -136,7 +136,7 @@ html, body, #main {
 @media (max-width: 760px) {
   /* Stacked mobile layout: map on top, event list below it (same list as desktop) */
   html, body, #main { height: auto; }
-  #map { height: 55vh; height: 55dvh; }
+  #map { height: 55vh; min-height: 320px; }
   .sidebar {
     display: flex; position: static; width: auto;
     border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none;

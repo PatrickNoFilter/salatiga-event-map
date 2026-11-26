@@ -7,6 +7,13 @@ use shared::{Event, NewEvent};
 /// from any host (localhost, Tailscale IP, or a real domain) with no rebuild.
 /// The env var is only a fallback for non-browser builds (e.g. Android shell).
 fn api_base() -> String {
+    // A build-time API URL wins when set (Android): in the Android WebView
+    // the page origin is the asset-loader domain, not the live site.
+    if let Some(v) = option_env!("EVENT_API_BASE_URL") {
+        if !v.is_empty() {
+            return v.to_string();
+        }
+    }
     #[cfg(target_arch = "wasm32")]
     {
         if let Some(win) = web_sys::window() {
@@ -17,10 +24,7 @@ fn api_base() -> String {
             }
         }
     }
-    match option_env!("EVENT_API_BASE_URL") {
-        Some(v) if !v.is_empty() => v.to_string(),
-        _ => "http://localhost:8080".to_string(),
-    }
+    "http://localhost:8080".to_string()
 }
 
 const CITY_CENTER: [f64; 2] = [110.5076, -7.3307];

@@ -4,7 +4,7 @@ default_platform = "web"
 public_dir = "public"
 
 # Android (Milestone 6). Uncomment android_manifest when building for Android:
-# android_manifest = "../../android/AndroidManifest.xml"
+android_manifest = "../../android/AndroidManifest.xml"
 # asset_dir = "assets"
 
 [android]

@@ -3,16 +3,44 @@
 <head>
   <meta charset="UTF-8" />  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Salatiga Event Map</title>
-  <!-- Pinned MapLibre GL JS. Swap for local copies in assets/ for production. -->
-  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <!-- MapLibre GL JS, bundled locally (was unpkg CDN) so the app's WebView
+       does not depend on the CDN — the map failed to appear in the app. -->
+  <link href="/assets/maplibre-gl.css" rel="stylesheet" />
+  <script src="/assets/maplibre-gl.js"></script>
 
   <!-- Cache-buster: bump ?v=N on every stylesheet change, because Altare's
        edge stamps max-age=14400 on static assets and ignores no-cache. -->
-  <link rel="stylesheet" href="/assets/style.css?v=3" />
+  <link rel="stylesheet" href="/assets/style.css?v=4" />
 </head>
 <body>
   <div id="main"></div>
+  <!-- TEMP DIAGNOSTIC (remove before the real release): shows the map state on screen -->
+  <div id="map-diag" style="position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;background:#111;color:#0f0;font:12px monospace;padding:8px;border-radius:8px;white-space:pre-wrap;">DIAG: starting…</div>
+  <script>
+  (function(){
+    function report(){
+      var d = document.getElementById('map-diag');
+      if(!d) return;
+      var m = document.getElementById('map');
+      var r = m ? m.getBoundingClientRect() : null;
+      var cs = m ? getComputedStyle(m) : null;
+      var lines = [];
+      lines.push('maplibregl: ' + (typeof maplibregl === 'undefined' ? 'MISSING' : 'ok'));
+      lines.push('EventMap: ' + (typeof window.EventMap === 'undefined' ? 'MISSING' : 'ok'));
+      lines.push('#map: ' + (m ? ('h=' + Math.round(r.height) + 'px w=' + Math.round(r.width) + 'px offsetH=' + m.offsetHeight + ' cssH=' + (cs ? cs.height : '?') + ' cssMinH=' + (cs ? cs.minHeight : '?')) : 'NO ELEMENT'));
+      lines.push('EventMap.map: ' + (window.EventMap && window.EventMap.map ? 'created' : 'null'));
+      var c = m ? m.querySelector('canvas') : null;
+      lines.push('canvas: ' + (c ? ('yes ' + c.width + 'x' + c.height) : 'none'));
+      lines.push('mapLoaded: ' + (window.EventMap && window.EventMap.map && window.EventMap.map.loaded ? window.EventMap.map.loaded() : 'n/a'));
+      lines.push('err: ' + (window.__mapErr || 'none'));
+      d.textContent = 'DIAG\n' + lines.join('\n');
+    }
+    window.addEventListener('error', function(e){ window.__mapErr = (e.message || String(e.error)); report(); });
+    var n = 0;
+    var t = setInterval(function(){ report(); if(++n >= 15) clearInterval(t); }, 1000);
+    report();
+  })();
+  </script>
   <script src="/assets/map.js"></script>
 </body>
 </html>
