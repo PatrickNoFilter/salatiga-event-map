@@ -152,4 +152,70 @@ window.EventMap = {
     if (enabled) this.map.getCanvas().style.cursor = "crosshair";
     else this.map.getCanvas().style.cursor = "";
   },
+  // Show the user's current position: a blue dot with a white ring, then
+  // fly the map to it. Single fix on tap (no continuous watch). On error
+  // (denied / unavailable / timeout / no geolocation API) the message is
+  // stored in window.__mapErr so it shows in the Map log panel.
+  showUserLocation() {
+    if (!this.map) {
+      window.__mapErr = "Location: map not ready";
+      return;
+    }
+    if (!navigator.geolocation) {
+      window.__mapErr = "Location: geolocation not available in this WebView";
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        const lng = p.coords.longitude;
+        const lat = p.coords.latitude;
+        try {
+          const data = {
+            type: "FeatureCollection",
+            features: [{
+              type: "Feature",
+              geometry: { type: "Point", coordinates: [lng, lat] },
+              properties: {},
+            }],
+          };
+          const src = this.map.getSource("user-location");
+          if (src) src.setData(data);
+          else this.map.addSource("user-location", { type: "geojson", data: data });
+          if (!this.map.getLayer("user-location-halo")) {
+            this.map.addLayer({
+              id: "user-location-halo",
+              type: "circle",
+              source: "user-location",
+              paint: {
+                "circle-radius": 18,
+                "circle-color": "#1D4ED8",
+                "circle-opacity": 0.25,
+              },
+            });
+          }
+          if (!this.map.getLayer("user-location-dot")) {
+            this.map.addLayer({
+              id: "user-location-dot",
+              type: "circle",
+              source: "user-location",
+              paint: {
+                "circle-radius": 9,
+                "circle-color": "#1D4ED8",
+                "circle-stroke-width": 3,
+                "circle-stroke-color": "#fff",
+              },
+            });
+          }
+        } catch (e) {
+          window.__mapErr = "Location: " + (e && e.message ? e.message : String(e));
+          return;
+        }
+        this.map.flyTo({ center: [lng, lat], zoom: 15, essential: true });
+      },
+      (err) => {
+        window.__mapErr = "Location: " + (err && err.message ? err.message : ("code " + (err ? err.code : "?")));
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  },
 };

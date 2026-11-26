@@ -341,19 +341,13 @@ fn App() -> Element {
             div { class: "row",
                 div { class: "brand", "Salatiga Event Map", small { "Discover what's on in the city" } }
                 div { class: "spacer" }
-                button { class: "icon-btn", title: "Near me", onclick: move |_| {
-                    spawn(async move {
-                        eval_script(
-                            r#"navigator.geolocation.getCurrentPosition(
-                                (p) => window.EventMap.map.flyTo([p.coords.longitude, p.coords.latitude], 14),
-                                () => dioxus.send("Location unavailable"),
-                                { enableHighAccuracy: true, timeout: 10000 }
-                            );"#.to_string(),
-                        ).await;
-                    });
-                }, "◎" }
                 button { class: "icon-btn", title: "Submit an event", onclick: open_submit, "+" }
                 button { class: "icon-btn", title: "Admin", onclick: move |_| show_admin.set(true), "⚙" }
+                button { class: "icon-btn", title: "My location", onclick: move |_| {
+                    spawn(async move {
+                        eval_script("window.EventMap.showUserLocation();".into()).await;
+                    });
+                }, "◎" }
                 button { class: "icon-btn", title: "Map log", onclick: collect_log, "Log" }
             }
             div { class: "chips",

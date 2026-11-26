@@ -14,33 +14,6 @@
 </head>
 <body>
   <div id="main"></div>
-  <!-- TEMP DIAGNOSTIC (remove before the real release): shows the map state on screen -->
-  <div id="map-diag" style="position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;background:#111;color:#0f0;font:12px monospace;padding:8px;border-radius:8px;white-space:pre-wrap;">DIAG: starting…</div>
-  <script>
-  (function(){
-    function report(){
-      var d = document.getElementById('map-diag');
-      if(!d) return;
-      var m = document.getElementById('map');
-      var r = m ? m.getBoundingClientRect() : null;
-      var cs = m ? getComputedStyle(m) : null;
-      var lines = [];
-      lines.push('maplibregl: ' + (typeof maplibregl === 'undefined' ? 'MISSING' : 'ok'));
-      lines.push('EventMap: ' + (typeof window.EventMap === 'undefined' ? 'MISSING' : 'ok'));
-      lines.push('#map: ' + (m ? ('h=' + Math.round(r.height) + 'px w=' + Math.round(r.width) + 'px offsetH=' + m.offsetHeight + ' cssH=' + (cs ? cs.height : '?') + ' cssMinH=' + (cs ? cs.minHeight : '?')) : 'NO ELEMENT'));
-      lines.push('EventMap.map: ' + (window.EventMap && window.EventMap.map ? 'created' : 'null'));
-      var c = m ? m.querySelector('canvas') : null;
-      lines.push('canvas: ' + (c ? ('yes ' + c.width + 'x' + c.height) : 'none'));
-      lines.push('mapLoaded: ' + (window.EventMap && window.EventMap.map && window.EventMap.map.loaded ? window.EventMap.map.loaded() : 'n/a'));
-      lines.push('err: ' + (window.__mapErr || 'none'));
-      d.textContent = 'DIAG\n' + lines.join('\n');
-    }
-    window.addEventListener('error', function(e){ window.__mapErr = (e.message || String(e.error)); report(); });
-    var n = 0;
-    var t = setInterval(function(){ report(); if(++n >= 15) clearInterval(t); }, 1000);
-    report();
-  })();
-  </script>
   <script src="/assets/map.js"></script>
 </body>
 </html>
