@@ -130,7 +130,24 @@ async fn eval_script(script: String) {
 }
 
 fn main() {
-    dioxus::launch(App);
+    // On Android, Dioxus serves its own minimal built-in index.html, NOT
+    // crates/app/index.html (that file is only used for the web build). So the
+    // map CSS/JS links in index.html never load on Android: maplibregl and
+    // EventMap stay MISSING and #map has no height (log 2026-11-26 10:00).
+    // Inject those tags into the built-in index head via the mobile config.
+    // On web this branch is not compiled; the web build uses index.html.
+    #[cfg(target_os = "android")]
+    {
+        dioxus::LaunchBuilder::new()
+            .with_cfg(dioxus::mobile::Config::new().with_custom_head(
+                r#"<link href="/assets/maplibre-gl.css" rel="stylesheet" /><script src="/assets/maplibre-gl.js"></script><link rel="stylesheet" href="/assets/style.css?v=4" /><script src="/assets/map.js"></script>"#.to_string(),
+            ))
+            .launch(App);
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        dioxus::launch(App);
+    }
 }
 
 #[component]
@@ -151,6 +168,8 @@ fn App() -> Element {
     let mut pick_mode = use_signal(|| false);
     let mut move_token = use_signal(|| 0u64);
     let mut toast = use_signal(|| None::<String>);
+    let mut log_text = use_signal(String::new);
+    let mut show_log = use_signal(|| false);
 
     // Initialise the map after mount. Retry until map.js is available.
     use_effect(move || {
@@ -298,6 +317,23 @@ fn App() -> Element {
         spawn(async move { eval_script("window.EventMap.setPickMode(false);".into()).await; });
     };
 
+    // Gather the map diagnostic into log_text and show the log panel.
+    // The panel has a Copy log button so the text can be pasted to chat.
+    let collect_log = move |_| {
+        log_text.set("Collecting map log…".into());
+        show_log.set(true);
+        spawn(async move {
+            let mut eval = document::eval(
+                r#"(function(){ var lines=[]; lines.push('url: '+location.href); lines.push('origin: '+location.origin); lines.push('maplibregl: '+(typeof maplibregl==='undefined'?'MISSING':'ok')); lines.push('EventMap: '+(typeof window.EventMap==='undefined'?'MISSING':'ok')); var m=document.getElementById('map'); if(!m){lines.push('#map: NO ELEMENT');} else { var r=m.getBoundingClientRect(); var cs=getComputedStyle(m); lines.push('#map: h='+Math.round(r.height)+'px w='+Math.round(r.width)+'px offsetH='+m.offsetHeight+' cssH='+cs.height+' cssMinH='+cs.minHeight); } lines.push('EventMap.map: '+(window.EventMap&&window.EventMap.map?'created':'null')); var c=m?m.querySelector('canvas'):null; lines.push('canvas: '+(c?('yes '+c.width+'x'+c.height):'none')); lines.push('mapLoaded: '+(window.EventMap&&window.EventMap.map&&window.EventMap.map.loaded?window.EventMap.map.loaded():'n/a')); lines.push('err: '+(window.__mapErr||'none')); lines.push('events: '+document.querySelectorAll('.list-item').length); dioxus.send(lines.join('\n')); })();"#,
+            );
+            if let Ok(v) = eval.recv::<serde_json::Value>().await {
+                if let Some(s) = v.as_str() {
+                    log_text.set(s.to_string());
+                }
+            }
+        });
+    };
+
     rsx! {
         div { id: "map" }
 
@@ -318,6 +354,7 @@ fn App() -> Element {
                 }, "◎" }
                 button { class: "icon-btn", title: "Submit an event", onclick: open_submit, "+" }
                 button { class: "icon-btn", title: "Admin", onclick: move |_| show_admin.set(true), "⚙" }
+                button { class: "icon-btn", title: "Map log", onclick: collect_log, "Log" }
             }
             div { class: "chips",
                 button { class: chip_class(preset() == "all"), onclick: move |_| preset.set("all".into()), "All" }
@@ -373,6 +410,35 @@ fn App() -> Element {
 
         if show_admin() {
             AdminPanel { onclose: move |_| show_admin.set(false) }
+        }
+
+        if show_log() {
+            div { class: "panel", onclick: move |_| show_log.set(false),
+                div { class: "panel-inner", onclick: move |e| e.stop_propagation(),
+                    div { style: "display:flex; justify-content:space-between; align-items:center;",
+                        h2 { "Map log" }
+                        button { class: "close", onclick: move |_| show_log.set(false), "×" }
+                    }
+                    pre { style: "white-space:pre-wrap; word-break:break-word; font:12px monospace; background:#111; color:#0f0; padding:10px; border-radius:8px; max-height:50vh; overflow:auto;", "{log_text()}" }
+                    div { class: "actions",
+                        button {
+                            class: "btn primary",
+                            onclick: move |_| {
+                                let text = log_text();
+                                spawn(async move {
+                                    if let Ok(json) = serde_json::to_string(&text) {
+                                        eval_script(format!("(function(t){{ if(navigator.clipboard&&navigator.clipboard.writeText){{ navigator.clipboard.writeText(t).catch(function(){{ var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); try{{document.execCommand('copy');}}catch(e){{}} document.body.removeChild(ta); }}); }} else {{ var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); try{{document.execCommand('copy');}}catch(e){{}} document.body.removeChild(ta); }} }})({json});")).await;
+                                    }
+                                });
+                                toast.set(Some("Log copied to clipboard.".into()));
+                            },
+                            "Copy log"
+                        }
+                        button { class: "btn", onclick: collect_log, "Refresh" }
+                        button { class: "btn", onclick: move |_| show_log.set(false), "Close" }
+                    }
+                }
+            }
         }
     }
 }
