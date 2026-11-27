@@ -265,7 +265,7 @@ async fn admin_list_events(
     State(state): State<AppState>,
     Query(q): Query<AdminQuery>,
 ) -> Result<Json<Vec<Event>>, AppError> {
-    const ALLOWED: [&str; 4] = ["pending", "approved", "rejected", "cancelled"];
+    const ALLOWED: [&str; 5] = ["pending", "approved", "rejected", "cancelled", "archived"];
     if !ALLOWED.contains(&q.status.as_str()) {
         return Err(AppError::BadRequest("invalid status".into()));
     }
