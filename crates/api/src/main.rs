@@ -126,10 +126,29 @@ async fn require_admin(
     Ok(next.run(req).await)
 }
 
+/// Archive events whose effective end (ends_at, or starts_at when
+/// ends_at is NULL) fell on a previous WIB day. Runs at the top of
+/// every public list fetch so the map never shows stale events.
+/// Archived rows stay in the database (status = 'archived') and are
+/// hidden from the public list; they remain visible via the admin list.
+async fn archive_expired_events(pool: &PgPool) -> Result<(), AppError> {
+    sqlx::query(
+        r#"UPDATE events SET status = 'archived'
+           WHERE status = 'approved'
+             AND (COALESCE(ends_at, starts_at) AT TIME ZONE 'Asia/Jakarta')::date
+                 < (now() AT TIME ZONE 'Asia/Jakarta')::date"#,
+    )
+    .execute(pool)
+    .await
+    .map_err(db_err)?;
+    Ok(())
+}
+
 async fn list_events(
     State(state): State<AppState>,
     Query(q): Query<EventQuery>,
 ) -> Result<Json<Vec<Event>>, AppError> {
+    archive_expired_events(&state.pool).await?;
     let rows = sqlx::query_as::<_, Event>(&format!(
         r#"SELECT {EVENT_COLUMNS} FROM events
            WHERE status = 'approved'
