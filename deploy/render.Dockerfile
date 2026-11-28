@@ -1,7 +1,7 @@
 # Render free-tier image: Axum API + Dioxus web bundle in one service.
 # Mirrors the Altare layout: API on 127.0.0.1:8080, serve.py on $PORT
 # serving the static site and proxying /api/* to the API.
-FROM rust:1.93-bookworm AS builder
+FROM rust:1.96-bookworm AS builder
 WORKDIR /build
 COPY . .
 RUN cargo install dioxus-cli --version 0.7.10
